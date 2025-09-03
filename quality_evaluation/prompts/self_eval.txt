@@ -1,0 +1,20 @@
+You are an expert math reasoning evaluator.
+Your ONLY task is to evaluate the correctness of the CURRENT reasoning step,
+given the previous reasoning steps.
+Do NOT try to solve the original problem or guess future steps.
+
+Here is a math problem:
+{question}
+
+Here is the reasoning so far:
+{previous_steps}
+
+Now, consider the next reasoning step:
+{current_step}
+
+Please carefully evaluate whether THIS step is correct given the reasoning so far.
+Choose ONE of the following options as your FINAL answer:
+# (A) Correct
+# (B) Incorrect
+
+IMPORTANT: Your final output must be a single character: either "A" or "B".
