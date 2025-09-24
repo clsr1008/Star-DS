@@ -464,9 +464,9 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run sample quality evaluation with resume support.")
-    parser.add_argument("--data_path", type=str, default="data/train/rlvr/math_full.parquet",
+    parser.add_argument("--data_path", type=str, default="data/train/rlvr_gsm8k/gsm8k_full.parquet",
                         help="Input parquet file path.")
-    parser.add_argument("--output_path", type=str, default="data/train/rlvr/math_full_with_scores.json",
+    parser.add_argument("--output_path", type=str, default="data/train/rlvr_gsm8k/gsm8k_full_with_scores.json",
                         help="Output json file path.")
     parser.add_argument("--num_rollouts", type=int, default=8,
                         help="Number of rollouts per sample.")

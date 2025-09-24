@@ -9,7 +9,7 @@ export WANDB_API_KEY=db1e7422d34fb72c311641f26a9652e39fe5414c
 
 python3 -m verl.trainer.main_ppo \
  algorithm.adv_estimator=grpo \
- data.train_files=data/train/rlvr/math_random1000.parquet \
+ data.train_files=data/train/rlvr/math_full_reward_variance_top1000.parquet \
  data.val_files=data/test/math500.parquet \
  data.train_batch_size=128 \
  data.val_batch_size=530 \
@@ -41,7 +41,7 @@ python3 -m verl.trainer.main_ppo \
  trainer.critic_warmup=0 \
  trainer.logger=['console','wandb'] \
  trainer.project_name='rlvr'\
- trainer.experiment_name='Qwen2.5-Math-1.5B-math_random1000'\
+ trainer.experiment_name='Qwen2.5-Math-1.5B-math_reward1000'\
  trainer.checkpoints_dir=$CHECKPOINTS_DIR \
  +trainer.val_before_train=True \
  trainer.n_gpus_per_node=2 \

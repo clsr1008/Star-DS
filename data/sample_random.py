@@ -4,7 +4,7 @@ import random
 import argparse
 
 
-def sample_random_from_parquet(parquet_file_path, num_samples, output_dir=None):
+def sample_random_from_parquet(parquet_file_path, num_samples, output_dir=None, seed=0):
     """
     从指定 parquet 文件中随机选择样本，并保存为新 parquet 文件
 
@@ -24,7 +24,7 @@ def sample_random_from_parquet(parquet_file_path, num_samples, output_dir=None):
     print(f"Randomly selecting {num_samples} samples ...")
 
     # 随机采样
-    sampled_df = df.sample(n=num_samples, random_state=42)
+    sampled_df = df.sample(n=num_samples, random_state=seed)
 
     # 确定输出路径
     if output_dir is None:
@@ -47,7 +47,8 @@ if __name__ == "__main__":
     parser.add_argument("--num", type=int, required=True, help="Number of samples to select")
     parser.add_argument("--output_dir", type=str, default=None,
                         help="Directory to save output parquet file (default: same as input)")
+    parser.add_argument("--seed", type=int, default=0, help="Random seed for sampling")
 
     args = parser.parse_args()
 
-    sample_random_from_parquet(args.input, args.num, args.output_dir)
+    sample_random_from_parquet(args.input, args.num, args.output_dir, args.seed)

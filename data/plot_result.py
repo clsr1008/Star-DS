@@ -50,7 +50,7 @@ def plot_metrics_multiple(benchmark_name, results_dirs, labels, max_step=None):
 
     plt.xlabel("Training Epoch")
     plt.ylabel("Accuracy (%)")
-    title = f"Accuracy vs Step for Benchmark '{benchmark_name}'"
+    title = f"Accuracy vs Epoch for Benchmark '{benchmark_name}'"
     plt.title(title)
     plt.grid(True)
     plt.legend()
