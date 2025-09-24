@@ -9,6 +9,13 @@ from tqdm import tqdm
 
 class PPLEvaluator:
     def __init__(self, model_name="Qwen/Qwen2.5-Math-1.5B", device="cuda"):
+        """
+        Initialize the PPL evaluator with a pre-trained causal LM.
+
+        Args:
+            model_name: HuggingFace model name
+            device: Device to load the model ('cuda' or 'cpu')
+        """
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name, torch_dtype=torch.float16, device_map=device
@@ -17,7 +24,15 @@ class PPLEvaluator:
         print(f"[Init] Loaded model {model_name} on {device}")
 
     def compute_ppl(self, text: str) -> float:
-        """计算单个文本的 PPL"""
+        """
+        Compute the perplexity (PPL) of a single text sequence.
+
+        Args:
+            text: Text input
+
+        Returns:
+            Perplexity value
+        """
         encodings = self.tokenizer(text, return_tensors="pt").to(self.model.device)
         with torch.no_grad():
             outputs = self.model(**encodings, labels=encodings["input_ids"])
@@ -28,7 +43,7 @@ class PPLEvaluator:
 def main(args):
     evaluator = PPLEvaluator(model_name=args.model_name, device=args.device)
 
-    # 读取 parquet 文件
+    # Load the parquet dataset
     df = pd.read_parquet(args.data_path)
 
     results = []
@@ -50,7 +65,7 @@ def main(args):
             "ppl": ppl
         })
 
-    # 保存到 json 文件
+    # Save results to JSON
     with open(args.output_path, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
 
@@ -58,15 +73,15 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Compute PPL for each sample in a parquet file.")
+    parser = argparse.ArgumentParser(description="Compute perplexity (PPL) for each sample in a parquet file.")
     parser.add_argument("--data_path", type=str, default="data/train/rlvr_gsm8k/gsm8k_full.parquet",
                         help="Input parquet file path.")
     parser.add_argument("--output_path", type=str, default="data/train/rlvr_gsm8k/gsm8k_full_with_ppl.json",
-                        help="Output json file path.")
+                        help="Output JSON file path.")
     parser.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-Math-1.5B",
-                        help="HF model name for perplexity calculation.")
+                        help="HuggingFace model name for perplexity calculation.")
     parser.add_argument("--device", type=str, default="cuda",
-                        help="Device: 'cuda' or 'cpu'.")
+                        help="Device to run the model: 'cuda' or 'cpu'.")
 
     args = parser.parse_args()
     main(args)

@@ -8,17 +8,18 @@ import numpy as np
 def sample_by_score(parquet_file_path, score_file_path, score_field, num_samples,
                     mode="top", output_dir=None, print_only=True):
     """
-    根据 JSON 文件里的分数字段筛选样本，并在 Parquet 主数据中提取这些样本保存，
-    同时打印出 question、answer 和对应分数。
+    Select samples from a parquet dataset based on external score JSON,
+    and print corresponding question, answer, and score.
+    Optionally save selected samples as a parquet file.
 
-    参数:
-        parquet_file_path: str, 主数据 parquet 文件
-        score_file_path: str, JSON 文件（包含 index 和对应分数）
-        score_field: str, 筛选字段
-        num_samples: int, 抽取的样本数
-        mode: str, "top" 表示取最高的样本，"bottom" 表示取最低的样本
-        output_dir: str, 保存路径
-        print_only: bool, 如果 True 只打印不保存 parquet
+    Args:
+        parquet_file_path: str, main dataset parquet file
+        score_file_path: str, JSON file containing indices and scores
+        score_field: str, score field to use for selection
+        num_samples: int, number of samples to select
+        mode: str, "top" = select highest scores, "bottom" = select lowest scores
+        output_dir: str, directory to save sampled parquet file
+        print_only: bool, if True only print results without saving
     """
     print(f"Loading main dataset from {parquet_file_path} ...")
     df = pd.read_parquet(parquet_file_path, engine="pyarrow")
@@ -28,33 +29,33 @@ def sample_by_score(parquet_file_path, score_file_path, score_field, num_samples
     with open(score_file_path, "r", encoding="utf-8") as f:
         scores = json.load(f)
 
-    score_df = pd.DataFrame(scores)  # 转成 DataFrame，里面有 index 和对应分数
+    score_df = pd.DataFrame(scores)  # Convert JSON to DataFrame with index and scores
     print(f"Loaded {len(score_df)} score records.")
 
-    # 如果是 hybrid，则计算新的字段
+    # If using hybrid score, compute new field
     if score_field == "hybrid":
         if not {"uncertainty_score", "reward_variance"}.issubset(score_df.columns):
-            raise ValueError("计算 hybrid_score 需要同时存在 'uncertainty_score' 和 'reward_variance' 字段")
+            raise ValueError("Computing 'hybrid' requires both 'uncertainty_score' and 'reward_variance' fields")
         score_df["hybrid"] = score_df["uncertainty_score"] + np.sqrt(score_df["reward_variance"])
 
     if score_field not in score_df.columns:
         raise ValueError(f"Field '{score_field}' not found in score file. Available fields: {list(score_df.columns)}")
 
-    # 按分数排序
+    # Sort by score
     ascending = True if mode == "bottom" else False
     score_sorted = score_df.sort_values(by=score_field, ascending=ascending)
 
-    # 选出目标 index
+    # Select target indices
     num_samples = min(num_samples, len(score_sorted))
     selected_scores = score_sorted.head(num_samples)
     selected_indices = set(selected_scores["index"].tolist())
 
-    # 在主数据中过滤
+    # Filter from main dataset
     sampled_df = df[df["extra_info"].apply(lambda x: x["index"] in selected_indices)].copy()
-    # 把 extra_info["index"] 提取成一列
+    # Extract index from extra_info
     sampled_df["index"] = sampled_df["extra_info"].apply(lambda x: x["index"])
 
-    # 🔹 打印 question, answer 和分数
+    # 🔹 Print question, answer and score
     print(f"\n📊 Top/Bottom {num_samples} samples by '{score_field}' ({mode}):\n")
     merged = sampled_df.merge(selected_scores, on="index")
     for _, row in merged.iterrows():
@@ -65,7 +66,7 @@ def sample_by_score(parquet_file_path, score_file_path, score_field, num_samples
         print(f"Q: {question}")
         print(f"A: {answer}\n{'-'*80}")
 
-    # 🔹 如果不是 print_only，则保存 parquet
+    # 🔹 Save parquet if not print_only
     if not print_only:
         if output_dir is None:
             output_dir = os.path.dirname(parquet_file_path)

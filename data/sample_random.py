@@ -6,27 +6,28 @@ import argparse
 
 def sample_random_from_parquet(parquet_file_path, num_samples, output_dir=None, seed=0):
     """
-    从指定 parquet 文件中随机选择样本，并保存为新 parquet 文件
+    Randomly select samples from a given parquet file and save as a new parquet file.
 
-    参数:
-        parquet_file_path: str, 输入的 parquet 文件路径
-        num_samples: int, 要抽取的样本数量
-        output_dir: str, 输出目录（默认与输入文件相同）
+    Args:
+        parquet_file_path: str, path to input parquet file
+        num_samples: int, number of samples to select
+        output_dir: str, directory to save output file (default: same as input)
+        seed: int, random seed for reproducibility
     """
-    # 加载 parquet 数据
+    # Load parquet dataset
     print(f"Loading dataset from {parquet_file_path} ...")
     df = pd.read_parquet(parquet_file_path, engine="pyarrow")
     total = len(df)
     print(f"Total records in dataset: {total}")
 
-    # 防止样本数超过总数
+    # Ensure num_samples does not exceed total
     num_samples = min(num_samples, total)
     print(f"Randomly selecting {num_samples} samples ...")
 
-    # 随机采样
+    # Random sampling
     sampled_df = df.sample(n=num_samples, random_state=seed)
 
-    # 确定输出路径
+    # Determine output directory
     if output_dir is None:
         output_dir = os.path.dirname(parquet_file_path)
     os.makedirs(output_dir, exist_ok=True)
@@ -34,7 +35,7 @@ def sample_random_from_parquet(parquet_file_path, num_samples, output_dir=None, 
     base_name = os.path.splitext(os.path.basename(parquet_file_path))[0].split("_")[0]
     output_file = os.path.join(output_dir, f"{base_name}_random{num_samples}.parquet")
 
-    # 保存文件
+    # Save sampled dataset
     sampled_df.to_parquet(output_file, engine="pyarrow", index=False)
     print(f"Saved sampled dataset to {output_file}")
 
@@ -47,7 +48,7 @@ if __name__ == "__main__":
     parser.add_argument("--num", type=int, required=True, help="Number of samples to select")
     parser.add_argument("--output_dir", type=str, default=None,
                         help="Directory to save output parquet file (default: same as input)")
-    parser.add_argument("--seed", type=int, default=0, help="Random seed for sampling")
+    parser.add_argument("--seed", type=int, default=0, help="Random seed for reproducibility")
 
     args = parser.parse_args()
 

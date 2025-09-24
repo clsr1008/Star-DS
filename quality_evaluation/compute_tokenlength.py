@@ -8,11 +8,25 @@ from tqdm import tqdm
 
 class TokenLengthEvaluator:
     def __init__(self, model_name="Qwen/Qwen2.5-Math-1.5B"):
+        """
+        Initialize the tokenizer for token length calculation.
+
+        Args:
+            model_name: HuggingFace model name for tokenizer
+        """
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         print(f"[Init] Loaded tokenizer {model_name}")
 
     def compute_token_length(self, text: str) -> int:
-        """计算单个文本的 token length"""
+        """
+        Compute the token length of a single text sequence.
+
+        Args:
+            text: Text input
+
+        Returns:
+            Number of tokens
+        """
         encodings = self.tokenizer(text, return_tensors="pt")
         return encodings["input_ids"].size(1)
 
@@ -20,7 +34,7 @@ class TokenLengthEvaluator:
 def main(args):
     evaluator = TokenLengthEvaluator(model_name=args.model_name)
 
-    # 读取 parquet 文件
+    # Load the parquet dataset
     df = pd.read_parquet(args.data_path)
 
     results = []
@@ -42,7 +56,7 @@ def main(args):
             "token_length": token_len
         })
 
-    # 保存到 json 文件
+    # Save results to JSON
     with open(args.output_path, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
 
@@ -54,8 +68,9 @@ if __name__ == "__main__":
     parser.add_argument("--data_path", type=str, default="data/train/rlvr_gsm8k/gsm8k_full.parquet",
                         help="Input parquet file path.")
     parser.add_argument("--output_path", type=str, default="data/train/rlvr_gsm8k/gsm8k_full_with_tokenlength.json",
-                        help="Output json file path.")
-    parser.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-Math-1.5B", help="HF tokenizer model name.")
+                        help="Output JSON file path.")
+    parser.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-Math-1.5B",
+                        help="HuggingFace tokenizer model name.")
 
     args = parser.parse_args()
     main(args)

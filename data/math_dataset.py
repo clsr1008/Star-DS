@@ -1,4 +1,5 @@
-"""Script to prepare Hendrycks MATH training dataset for DeepScaler-style training.
+"""
+Script to prepare Hendrycks MATH training dataset for DeepScaler-style training.
 
 This script processes the local Hendrycks MATH dataset into a standardized format.
 It loads all training parquet files from the 7 categories, extracts final boxed answers,
@@ -26,7 +27,7 @@ def make_map_fn(split: str):
         instruction = "Let's think step by step and output the final answer within \\boxed{}."
         question = f"{question} {instruction}"
 
-        # 从 solution 提取最终答案
+        # Extract final answer from solution
         raw_solution = example.get('solution', "")
         answer = extract_solution(raw_solution)
 
@@ -68,7 +69,7 @@ if __name__ == '__main__':
 
     makedirs(local_dir, exist_ok=True)
 
-    # 所有 7 个类别文件夹
+    # All 7 category folders
     categories = [
         'algebra',
         'counting_and_probability',
@@ -95,12 +96,12 @@ if __name__ == '__main__':
                 train_data.append(processed_example)
                 idx_counter += 1
 
-    # 保存合并后的训练集
+    # Save merged training dataset
     print("train data size:", len(train_data))
     train_df = pd.DataFrame(train_data)
     train_df.to_parquet(os.path.join(local_dir, 'math_full.parquet'))
 
-    # 可选：同步到 HDFS
+    # Optionally copy to HDFS
     if hdfs_dir is not None:
         makedirs(hdfs_dir)
         copy(src=local_dir, dst=hdfs_dir)

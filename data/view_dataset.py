@@ -3,10 +3,12 @@ import pandas as pd
 import argparse
 import json
 
+
 def pretty_print_row(row):
-    """美观打印一行数据"""
+    """Pretty print a single dataset row."""
     print(f"📌 index: {row.get('extra_info', {}).get('index', 'N/A')}  |  data source: {row['data_source']}")
     print(f"ability: {row['ability']}")
+
     print("\n--- Prompt ---")
     try:
         prompt_data = json.loads(row['prompt']) if isinstance(row['prompt'], str) else row['prompt']
@@ -29,31 +31,33 @@ def pretty_print_row(row):
         print(row['extra_info'])
     print("=" * 60)
 
+
 def main(file_path, start, end):
-    print(f"正在加载数据集: {file_path}")
+    print(f"Loading dataset: {file_path}")
     try:
         df = pd.read_parquet(file_path)
     except Exception as e:
-        print(f"❌ 无法读取 {file_path}: {e}")
+        print(f"❌ Failed to read {file_path}: {e}")
         return
 
-    print("\n===== 数据集信息 =====")
-    print(f"数据行数: {len(df)}")
-    print(f"列名: {list(df.columns)}")
-    print("\n数据类型:")
+    print("\n===== Dataset Info =====")
+    print(f"Number of rows: {len(df)}")
+    print(f"Columns: {list(df.columns)}")
+    print("\nData types:")
     print(df.dtypes)
 
-    # 取指定范围
-    print(f"\n===== 显示第 {start} 行到第 {end} 行（结构化显示） =====")
+    # Display the specified range
+    print(f"\n===== Display rows {start} to {end} (structured view) =====")
     for i in range(start, min(end, len(df))):
         row = df.iloc[i].to_dict()
         pretty_print_row(row)
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="查看 parquet 数据集内容（美观结构化输出）")
-    parser.add_argument("--file", type=str, required=True, help="parquet 文件路径")
-    parser.add_argument("--start", type=int, default=0, help="起始行（包含）")
-    parser.add_argument("--end", type=int, default=5, help="结束行（不包含）")
+    parser = argparse.ArgumentParser(description="View parquet dataset content (pretty structured output)")
+    parser.add_argument("--file", type=str, required=True, help="Path to the parquet file")
+    parser.add_argument("--start", type=int, default=0, help="Starting row (inclusive)")
+    parser.add_argument("--end", type=int, default=5, help="Ending row (exclusive)")
     args = parser.parse_args()
 
     main(args.file, args.start, args.end)

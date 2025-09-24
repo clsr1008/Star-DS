@@ -9,11 +9,11 @@ def collect_metrics(results_dir, benchmark_name, max_step=None):
     steps = []
     accs = []
 
-    # 遍历每个 global_step_* 文件夹
+    # Iterate through each global_step_* folder
     for step_folder in sorted(os.listdir(results_dir), key=lambda x: int(x.split('_')[-1])):
         step_num = int(step_folder.split('_')[-1])
         if max_step is not None and step_num > max_step:
-            continue  # 超过 max_step 就跳过
+            continue  # Skip steps beyond max_step
 
         step_path = os.path.join(results_dir, step_folder)
         if not os.path.isdir(step_path):
@@ -23,7 +23,7 @@ def collect_metrics(results_dir, benchmark_name, max_step=None):
         if not os.path.isdir(benchmark_path):
             continue
 
-        # 找到 metrics.json 文件
+        # Find the metrics.json file
         metrics_files = [f for f in os.listdir(benchmark_path) if f.endswith("_metrics.json")]
         if not metrics_files:
             continue
@@ -56,18 +56,17 @@ def plot_metrics_multiple(benchmark_name, results_dirs, labels, max_step=None):
     plt.legend()
     plt.tight_layout()
 
-    # 保存图片到 data/plot 文件夹
+    # Save plot to data/plot directory
     save_dir = "data/plot"
     os.makedirs(save_dir, exist_ok=True)
     save_path = os.path.join(save_dir, f"{benchmark_name}_accuracy_plot.png")
     plt.savefig(save_path, dpi=300)
-    print(f"Plot saved to {save_path}")
+    print(f"✅ Plot saved to {save_path}")
 
     plt.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plot Accuracy vs Step for a Benchmark")
-    # parser.add_argument("--results_dir", type=str, required=True, help="Path to the results folder")
     parser.add_argument("--results_dirs", type=str, nargs='+', required=True,
                         help="Paths to the results folders (space-separated)")
     parser.add_argument("--labels", type=str, nargs='+', required=True,

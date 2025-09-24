@@ -7,9 +7,9 @@ from scipy.stats import pearsonr
 
 def compare_scores(file1, file2, show_n=10):
     """
-    比较两个评分 JSON 文件的差异，并打印统计结果和部分对比样本
+    Compare two JSON score files and print statistics and sample comparisons
     """
-    # 加载两个文件
+    # Load files
     with open(file1, "r", encoding="utf-8") as f1, open(file2, "r", encoding="utf-8") as f2:
         data1 = json.load(f1)
         data2 = json.load(f2)
@@ -17,7 +17,7 @@ def compare_scores(file1, file2, show_n=10):
     df1 = pd.DataFrame(data1).set_index("index")
     df2 = pd.DataFrame(data2).set_index("index")
 
-    # 按 index 对齐
+    # Align by index
     merged = df1.join(df2, lsuffix="_1", rsuffix="_2")
 
     results = {}
@@ -30,11 +30,11 @@ def compare_scores(file1, file2, show_n=10):
 
         results[field] = {"mse": mse, "pearson_corr": corr}
 
-    print("\n=== 差异统计结果 ===")
+    print("\n=== Difference Statistics ===")
     for field, stats in results.items():
         print(f"{field}: MSE={stats['mse']:.6f}, Pearson Corr={stats['pearson_corr']:.4f}")
 
-    print(f"\n=== 部分对比样本 (前{show_n}条) ===")
+    print(f"\n=== Sample Comparisons (first {show_n}) ===")
     print(merged.head(show_n).to_string(float_format=lambda x: f"{x:.6f}"))
 
     return merged, results

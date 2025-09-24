@@ -16,9 +16,7 @@ from verl.utils.hdfs_io import copy, makedirs
 
 
 def extract_final_answer(answer_str: str) -> str:
-    """
-    从 GSM8K 的 answer 中提取最终答案（在 '#### ' 后面）
-    """
+    """Extract the final answer from GSM8K's answer field (after '####')."""
     if "####" in answer_str:
         return answer_str.split("####")[-1].strip()
     return answer_str.strip()
@@ -33,7 +31,7 @@ def make_map_fn(split: str):
 
         raw_answer = example.get('answer', "")
         answer = extract_final_answer(raw_answer)
-        index = example.get("idx", None)  # 直接从 JSON 文件拿 index
+        index = example.get("idx", None)  # index is taken directly from JSON file
 
         data = {
             "data_source": data_source,
@@ -82,13 +80,13 @@ if __name__ == '__main__':
             if processed_example is not None:
                 train_data.append(processed_example)
 
-    # 保存合并后的训练集
+    # Save processed training dataset
     print("train data size:", len(train_data))
     train_df = pd.DataFrame(train_data)
     output_file = os.path.join(local_dir, 'gsm8k_full.parquet')
     train_df.to_parquet(output_file)
 
-    # 可选：同步到 HDFS
+    # Optionally copy to HDFS
     if hdfs_dir is not None:
         makedirs(hdfs_dir)
         copy(src=local_dir, dst=hdfs_dir)
